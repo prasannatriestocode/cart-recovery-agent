@@ -61,12 +61,21 @@ export default async function DiagnosticPage({
             {String(rootCauses.recommendation)}
           </p>
 
-          <Link
-            href={`/fixes/new?diagnosticId=${diagnostic.id}`}
-            className="mt-6 inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 hover:bg-slate-200"
-          >
-            Generate fix with Codex
-          </Link>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href={`/fixes/new?diagnosticId=${diagnostic.id}&mode=fast`}
+              className="inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 hover:bg-slate-200"
+            >
+              Generate Fast Fix
+            </Link>
+
+            <Link
+              href={`/fixes/new?diagnosticId=${diagnostic.id}&mode=deep`}
+              className="inline-flex rounded-xl border border-slate-700 px-5 py-3 font-semibold text-white hover:bg-slate-800"
+            >
+              Generate Deep Fix
+            </Link>
+          </div>
         </section>
 
         <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6">

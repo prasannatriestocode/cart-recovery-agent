@@ -4,6 +4,8 @@ import { getMockFix } from "./mock-fix";
 
 export type GeneratedFixResult = {
   fixType: string;
+  generationMode: "fast" | "deep";
+  modelName: string;
   componentName: string;
   componentCode: string;
   testCode: string;
@@ -25,13 +27,31 @@ function extractJson(text: string) {
 export async function generateFixWithCodex(input: {
   rootCauses: unknown;
   dropOffMetrics: unknown;
+  mode?: "fast" | "deep";
 }): Promise<GeneratedFixResult> {
   const prompt = buildFixPrompt(input);
+
+  const generationMode = input.mode === "deep" ? "deep" : "fast";
+
+  const modelName =
+    generationMode === "deep"
+      ? process.env.CODEX_DEEP_MODEL ?? "gpt-5.3-codex"
+      : process.env.CODEX_FAST_MODEL ?? "gpt-5.2-codex";
+
+  console.log(`Using Codex generation mode: ${generationMode}`);
+  console.log(`Selected model: ${modelName}`);
 
   if (process.env.CODEX_MOCK?.toLowerCase() === "true") {
     console.log("CODEX_MOCK=true, returning mock fix.");
     console.log("Prompt preview:", prompt.slice(0, 500));
-    return getMockFix();
+
+    const mockFix = getMockFix();
+
+    return {
+      ...mockFix,
+      generationMode,
+      modelName,
+    };
   }
 
   const codex = new Codex();
@@ -50,6 +70,8 @@ export async function generateFixWithCodex(input: {
 
   return {
     fixType: String(parsed.fixType),
+    generationMode,
+    modelName,
     componentName: String(parsed.componentName),
     componentCode: String(parsed.componentCode),
     testCode: String(parsed.testCode),

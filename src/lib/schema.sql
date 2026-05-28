@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS code_fixes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   diagnostic_id UUID NOT NULL REFERENCES diagnostics(id) ON DELETE CASCADE,
   fix_type STRING NOT NULL,
+  generation_mode STRING NOT NULL DEFAULT 'fast',
+  model_name STRING,
   component_name STRING NOT NULL,
   component_code STRING NOT NULL,
   test_code STRING NOT NULL,

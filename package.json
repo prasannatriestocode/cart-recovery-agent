@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:init": "tsx scripts/init-db.ts",
+    "db:migrate:mode": "tsx scripts/migrations/add-code-fix-generation-mode.ts",
     "test": "vitest run"
   },
   "dependencies": {

@@ -7,7 +7,7 @@ import { generateFixWithCodex } from "@/lib/codex/generate-fix";
 export default async function NewFixPage({
   searchParams,
 }: {
-  searchParams: Promise<{ diagnosticId?: string }>;
+  searchParams: Promise<{ diagnosticId?: string; mode?: string }>;
 }) {
   const merchant = await getCurrentMerchant();
 
@@ -15,7 +15,8 @@ export default async function NewFixPage({
     redirect("/sign-in");
   }
 
-  const { diagnosticId } = await searchParams;
+  const { diagnosticId, mode } = await searchParams;
+  const generationMode = mode === "deep" ? "deep" : "fast";
 
   if (!diagnosticId) {
     redirect("/dashboard");
@@ -30,11 +31,14 @@ export default async function NewFixPage({
 const generatedFix = await generateFixWithCodex({
   rootCauses: diagnostic.root_causes,
   dropOffMetrics: diagnostic.drop_off_metrics,
+  mode: generationMode,
 });
 
 const codeFix = await createCodeFix({
   diagnosticId: diagnostic.id,
   fixType: generatedFix.fixType,
+  generationMode: generatedFix.generationMode,
+  modelName: generatedFix.modelName,
   componentName: generatedFix.componentName,
   componentCode: generatedFix.componentCode,
   testCode: generatedFix.testCode,

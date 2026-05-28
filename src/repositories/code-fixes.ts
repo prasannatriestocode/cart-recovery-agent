@@ -4,6 +4,8 @@ export type CodeFix = {
   id: string;
   diagnostic_id: string;
   fix_type: string;
+  generation_mode: string;
+  model_name: string | null;
   component_name: string;
   component_code: string;
   test_code: string;
@@ -18,6 +20,8 @@ export type CodeFix = {
 export async function createCodeFix(input: {
   diagnosticId: string;
   fixType: string;
+  generationMode: "fast" | "deep";
+  modelName?: string;
   componentName: string;
   componentCode: string;
   testCode: string;
@@ -29,18 +33,22 @@ export async function createCodeFix(input: {
     INSERT INTO code_fixes (
       diagnostic_id,
       fix_type,
+      generation_mode,
+      model_name,
       component_name,
       component_code,
       test_code,
       explanation,
       deployment_notes
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
     RETURNING *
     `,
     [
       input.diagnosticId,
       input.fixType,
+      input.generationMode,
+      input.modelName ?? null,
       input.componentName,
       input.componentCode,
       input.testCode,
