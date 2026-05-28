@@ -64,3 +64,4 @@ Drop-off metrics:
 (Use `node --trace-deprecation ...` to show where the warning was created)
  GET /storefront 200 in 453ms (next.js: 12ms, proxy.ts: 287ms, application-code: 154ms)
 [browser] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview (https://funny-spider-94.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js:12:3216)
+✓ Compiled in 221ms
