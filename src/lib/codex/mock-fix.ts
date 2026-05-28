@@ -3,7 +3,7 @@ export function getMockFix() {
     fixType: "banner",
     componentName: "FreeShippingThresholdBanner",
     explanation:
-      "The largest drop-off happens at the shipping step, where shoppers see added shipping cost. This banner moves the free-shipping incentive earlier in the journey.",
+      "The largest drop-off happens when shoppers reach the shipping step and see an added shipping cost. This fix adds a free-shipping progress banner on the cart page before checkout, so shoppers know how close they are to avoiding shipping fees before they abandon.",
     componentCode: `type FreeShippingThresholdBannerProps = {
   cartTotal: number;
   freeShippingThreshold: number;
@@ -66,6 +66,6 @@ describe("FreeShippingThresholdBanner", () => {
   });
 });`,
     deploymentNotes:
-      "Place this component above the checkout button on the cart page. Run it as an A/B test for shoppers before they reach the shipping step.",
+      "Deploy this banner above the checkout button on the cart page. The goal is to reduce shipping-step abandonment by showing the free-shipping threshold before shoppers encounter shipping fees.",
   };
 }
