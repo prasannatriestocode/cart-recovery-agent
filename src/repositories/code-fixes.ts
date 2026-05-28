@@ -90,3 +90,17 @@ export async function deployCodeFix(id: string) {
 
   return rows[0] ?? null;
 }
+
+export async function getLatestDeployedCodeFix() {
+  const rows = await query<CodeFix>(
+    `
+    SELECT *
+    FROM code_fixes
+    WHERE deployed = true
+    ORDER BY deployed_at DESC
+    LIMIT 1
+    `,
+  );
+
+  return rows[0] ?? null;
+}

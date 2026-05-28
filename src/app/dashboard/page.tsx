@@ -41,6 +41,12 @@ export default async function DashboardPage() {
           >
             Analyze abandoned carts
           </Link>
+          <Link
+            href="/storefront"
+            className="ml-3 mt-6 inline-flex rounded-xl border border-slate-700 px-5 py-3 font-semibold text-white hover:bg-slate-800"
+          >
+            View Demo Storefront
+          </Link>
         </section>
       </div>
     </main>

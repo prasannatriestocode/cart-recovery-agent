@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentMerchant } from "@/lib/current-merchant";
 import { deployCodeFix, getCodeFix } from "@/repositories/code-fixes";
@@ -77,8 +78,17 @@ export default async function FixPage({
             <input type="hidden" name="id" value={fix.id} />
 
             {fix.deployed ? (
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-emerald-200">
-                Deployed to demo store
+              <div className="space-y-3">
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-emerald-200">
+                  Deployed to demo store
+                </div>
+
+                <Link
+                  href="/storefront"
+                  className="inline-flex rounded-xl bg-emerald-400 px-5 py-3 font-semibold text-slate-950 hover:bg-emerald-300"
+                >
+                  View Demo Storefront
+                </Link>
               </div>
             ) : (
               <button

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "db:init": "tsx scripts/init-db.ts",
     "db:migrate:mode": "tsx scripts/migrations/add-code-fix-generation-mode.ts",
+    "db:reset-demo": "tsx scripts/reset-demo-deployments.ts",
     "test": "vitest run"
   },
   "dependencies": {
