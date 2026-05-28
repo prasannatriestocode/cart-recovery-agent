@@ -77,63 +77,34 @@ After deploy:
 
 ## Architecture
 
-## Architecture
-
-```mermaid
-flowchart TD
-    Merchant["Merchant<br/>(browser)"] -->|"Clerk auth"| Next["Next.js App Router"]
-
-    subgraph Services["Application services"]
-        direction TB
-
-        Analyzer["Funnel analyzer<br/><span style='font-size:12px'>Deterministic TypeScript</span>"]
-        Diagnosis["Root-cause diagnosis<br/><span style='font-size:12px'>Rule-based logic</span>"]
-
-        Prompt["Codex prompt builder<br/><span style='font-size:12px'>build-fix-prompt.ts</span>"]
-        Generator["Codex fix generator<br/><span style='font-size:12px'>Codex SDK · Fast / Deep</span>"]
-
-        Analyzer --> Diagnosis
-        Diagnosis --> Generator
-        Prompt --> Generator
-    end
-
-    Next --> Analyzer
-    Next --> Prompt
-
-    subgraph DB["CockroachDB Cloud<br/>(pg driver)"]
-        direction TB
-
-        subgraph Tables[" "]
-            direction LR
-            Merchants["merchants"]
-            Sessions["cart_sessions"]
-            Diagnostics["diagnostics"]
-            Fixes["code_fixes<br/><span style='font-size:12px'>+ deployed, deployed_at</span>"]
-        end
-    end
-
-    Diagnosis --> DB
-    Generator --> DB
-
-    DB -->|"reads latest deployed"| Storefront["/storefront route<br/><span style='font-size:12px'>Renders recovery banner</span>"]
-
-    classDef browser fill:#f7f4ed,stroke:#a8a29e,color:#292524,rx:8,ry:8;
-    classDef next fill:#eef2ff,stroke:#6366f1,color:#3730a3,rx:8,ry:8;
-    classDef service fill:#dcfce7,stroke:#34d399,color:#064e3b,rx:8,ry:8;
-    classDef codex fill:#fff1f2,stroke:#f97316,color:#7c2d12,rx:8,ry:8;
-    classDef database fill:#e0f2fe,stroke:#3b82f6,color:#075985,rx:8,ry:8;
-    classDef table fill:#eaf4ff,stroke:#60a5fa,color:#075985,rx:8,ry:8;
-    classDef fix fill:#ffedd5,stroke:#f59e0b,color:#7c2d12,rx:8,ry:8;
-    classDef storefront fill:#ecfccb,stroke:#84cc16,color:#365314,rx:8,ry:8;
-
-    class Merchant browser;
-    class Next next;
-    class Analyzer,Diagnosis service;
-    class Prompt,Generator codex;
-    class DB database;
-    class Merchants,Sessions,Diagnostics table;
-    class Fixes fix;
-    class Storefront storefront;
+```txt
+Browser
+  |
+  | Clerk-authenticated merchant
+  v
+Next.js App Router
+  |
+  | Server components / server actions
+  v
+Application services
+  |
+  |-- Cart funnel analyzer
+  |-- Root-cause diagnosis logic
+  |-- Codex prompt builder
+  |-- Codex fix generator
+  |-- Demo deployment updater
+  |-- Demo storefront renderer
+  |
+  v
+CockroachDB Cloud Basic
+  |
+  |-- merchants
+  |-- cart_sessions
+  |-- diagnostics
+  |-- code_fixes
+  |
+  v
+/storefront reads latest deployed code_fixes row
 ```
 
 The app intentionally separates deterministic analysis from AI-generated remediation.
