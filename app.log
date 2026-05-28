@@ -65,3 +65,16 @@ Drop-off metrics:
  GET /storefront 200 in 453ms (next.js: 12ms, proxy.ts: 287ms, application-code: 154ms)
 [browser] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview (https://funny-spider-94.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js:12:3216)
 ✓ Compiled in 221ms
+ GET /dashboard 200 in 2.5s (next.js: 145ms, proxy.ts: 1258ms, application-code: 1139ms)
+[browser] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview (https://funny-spider-94.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js:12:3216)
+ POST /dashboard 200 in 472ms (next.js: 13ms, proxy.ts: 25ms, application-code: 434ms)
+  └─ ƒ invalidateCacheAction() in 4ms node_modules/@clerk/nextjs/dist/esm/app-router/server-actions.js
+ GET / 200 in 87ms (next.js: 21ms, proxy.ts: 20ms, application-code: 46ms)
+[browser] Image with src "http://localhost:3000/vercel.svg" has either width or height modified, but not the other. If you use CSS to change the size of your image, also include the styles 'width: "auto"' or 'height: "auto"' to maintain the aspect ratio.
+ GET / 200 in 26ms (next.js: 4ms, proxy.ts: 8ms, application-code: 14ms)
+ GET /storefront 200 in 84ms (next.js: 25ms, proxy.ts: 11ms, application-code: 49ms)
+ GET /sign-in?redirect_url=http%3A%2F%2Flocalhost%3A3000%2Fdashboard 200 in 76ms (next.js: 25ms, proxy.ts: 9ms, application-code: 42ms)
+[browser] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview (https://funny-spider-94.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js:12:3216)
+ GET /sign-in/SignIn_clerk_catchall_check_1779969638236 200 in 60ms (next.js: 7ms, proxy.ts: 9ms, application-code: 44ms)
+ GET /dashboard 200 in 840ms (next.js: 8ms, proxy.ts: 8ms, application-code: 824ms)
+[browser] Clerk: Clerk has been loaded with development keys. Development instances have strict usage limits and should not be used when deploying your application to production. Learn more: https://clerk.com/docs/deployments/overview (https://funny-spider-94.clerk.accounts.dev/npm/@clerk/clerk-js@6/dist/clerk.browser.js:12:3216)
