@@ -1,7 +1,71 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getCurrentMerchant } from "@/lib/current-merchant";
+import { generateFixWithCodex } from "@/lib/codex/generate-fix";
 import { getDiagnostic } from "@/repositories/diagnostics";
+import {
+  createCodeFix,
+  getCodeFixForDiagnosticAndMode,
+} from "@/repositories/code-fixes";
+
+type MetricsView = {
+  biggestDropOffStep?: string;
+  shippingToPaymentRate?: number;
+};
+
+type RootCauseView = {
+  primaryCause?: string;
+  recommendation?: string;
+};
+
+async function generateFixAction(formData: FormData) {
+  "use server";
+
+  const merchant = await getCurrentMerchant();
+
+  if (!merchant) {
+    redirect("/sign-in");
+  }
+
+  const diagnosticId = String(formData.get("diagnosticId") ?? "");
+  const modeValue = String(formData.get("mode") ?? "fast");
+  const generationMode = modeValue === "deep" ? "deep" : "fast";
+
+  const diagnostic = await getDiagnostic(diagnosticId, merchant.id);
+
+  if (!diagnostic) {
+    redirect("/dashboard");
+  }
+
+  const existingFix = await getCodeFixForDiagnosticAndMode(
+    diagnostic.id,
+    merchant.id,
+    generationMode,
+  );
+
+  if (existingFix) {
+    redirect(`/fixes/${existingFix.id}`);
+  }
+
+  const generatedFix = await generateFixWithCodex({
+    rootCauses: diagnostic.root_causes,
+    dropOffMetrics: diagnostic.drop_off_metrics,
+    mode: generationMode,
+  });
+
+  const codeFix = await createCodeFix({
+    diagnosticId: diagnostic.id,
+    fixType: generatedFix.fixType,
+    generationMode: generatedFix.generationMode,
+    modelName: generatedFix.modelName,
+    componentName: generatedFix.componentName,
+    componentCode: generatedFix.componentCode,
+    testCode: generatedFix.testCode,
+    explanation: generatedFix.explanation,
+    deploymentNotes: generatedFix.deploymentNotes,
+  });
+
+  redirect(`/fixes/${codeFix.id}`);
+}
 
 export default async function DiagnosticPage({
   params,
@@ -21,8 +85,8 @@ export default async function DiagnosticPage({
     notFound();
   }
 
-  const metrics = diagnostic.drop_off_metrics as Record<string, any>;
-  const rootCauses = diagnostic.root_causes as Record<string, any>;
+  const metrics = diagnostic.drop_off_metrics as MetricsView;
+  const rootCauses = diagnostic.root_causes as RootCauseView;
 
   return (
     <main className="min-h-screen bg-slate-950 p-8 text-white">
@@ -36,21 +100,21 @@ export default async function DiagnosticPage({
           <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
             <p className="text-sm text-slate-400">Biggest drop-off</p>
             <p className="mt-2 text-2xl font-bold">
-              {String(metrics.biggestDropOffStep)}
+              {String(metrics.biggestDropOffStep ?? "unknown")}
             </p>
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
             <p className="text-sm text-slate-400">Shipping → Payment</p>
             <p className="mt-2 text-2xl font-bold">
-              {Math.round(Number(metrics.shippingToPaymentRate) * 100)}%
+              {Math.round(Number(metrics.shippingToPaymentRate ?? 0) * 100)}%
             </p>
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
             <p className="text-sm text-slate-400">Root cause</p>
             <p className="mt-2 text-2xl font-bold">
-              {String(rootCauses.primaryCause)}
+              {String(rootCauses.primaryCause ?? "unknown")}
             </p>
           </div>
         </section>
@@ -58,23 +122,31 @@ export default async function DiagnosticPage({
         <section className="mt-6 rounded-2xl border border-slate-800 bg-slate-900 p-6">
           <h2 className="text-xl font-semibold">Recommendation</h2>
           <p className="mt-2 text-slate-300">
-            {String(rootCauses.recommendation)}
+            {String(rootCauses.recommendation ?? "No recommendation available.")}
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link
-              href={`/fixes/new?diagnosticId=${diagnostic.id}&mode=fast`}
-              className="inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 hover:bg-slate-200"
-            >
-              Generate Fast Fix
-            </Link>
+            <form action={generateFixAction}>
+              <input type="hidden" name="diagnosticId" value={diagnostic.id} />
+              <input type="hidden" name="mode" value="fast" />
+              <button
+                type="submit"
+                className="inline-flex rounded-xl bg-white px-5 py-3 font-semibold text-slate-950 hover:bg-slate-200"
+              >
+                Generate Fast Fix
+              </button>
+            </form>
 
-            <Link
-              href={`/fixes/new?diagnosticId=${diagnostic.id}&mode=deep`}
-              className="inline-flex rounded-xl border border-slate-700 px-5 py-3 font-semibold text-white hover:bg-slate-800"
-            >
-              Generate Deep Fix
-            </Link>
+            <form action={generateFixAction}>
+              <input type="hidden" name="diagnosticId" value={diagnostic.id} />
+              <input type="hidden" name="mode" value="deep" />
+              <button
+                type="submit"
+                className="inline-flex rounded-xl border border-slate-700 px-5 py-3 font-semibold text-white hover:bg-slate-800"
+              >
+                Generate Deep Fix
+              </button>
+            </form>
           </div>
         </section>
 

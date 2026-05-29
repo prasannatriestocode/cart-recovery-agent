@@ -43,7 +43,7 @@ export async function generateFixWithCodex(input: {
 
   if (process.env.CODEX_MOCK?.toLowerCase() === "true") {
     console.log("CODEX_MOCK=true, returning mock fix.");
-    console.log("Prompt preview:", prompt.slice(0, 500));
+    //console.log("Prompt preview:", prompt.slice(0, 500));
 
     const mockFix = getMockFix();
 

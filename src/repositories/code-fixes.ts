@@ -60,21 +60,23 @@ export async function createCodeFix(input: {
   return rows[0];
 }
 
-export async function getCodeFix(id: string) {
+export async function getCodeFix(id: string, merchantId: string) {
   const rows = await query<CodeFix>(
     `
     SELECT *
-    FROM code_fixes
-    WHERE id = $1
+    FROM code_fixes cf
+    JOIN diagnostics d ON d.id = cf.diagnostic_id
+    WHERE cf.id = $1
+    AND d.merchant_id = $2
     LIMIT 1
     `,
-    [id],
+    [id, merchantId],
   );
 
   return rows[0] ?? null;
 }
 
-export async function deployCodeFix(id: string) {
+export async function deployCodeFix(id: string, merchantId: string) {
   const rows = await query<CodeFix>(
     `
     UPDATE code_fixes
@@ -83,23 +85,54 @@ export async function deployCodeFix(id: string) {
       deployed_at = now(),
       status = 'deployed'
     WHERE id = $1
+      AND EXISTS (
+        SELECT 1
+        FROM diagnostics
+        WHERE diagnostics.id = code_fixes.diagnostic_id
+          AND diagnostics.merchant_id = $2
+      )
     RETURNING *
     `,
-    [id],
+    [id, merchantId],
   );
 
   return rows[0] ?? null;
 }
 
-export async function getLatestDeployedCodeFix() {
+export async function getLatestDeployedCodeFixForMerchant(merchantId: string) {
   const rows = await query<CodeFix>(
     `
-    SELECT *
-    FROM code_fixes
-    WHERE deployed = true
-    ORDER BY deployed_at DESC
+    SELECT cf.*
+    FROM code_fixes cf
+    JOIN diagnostics d ON d.id = cf.diagnostic_id
+    WHERE cf.deployed = true
+      AND d.merchant_id = $1
+    ORDER BY cf.deployed_at DESC
     LIMIT 1
     `,
+    [merchantId],
+  );
+
+  return rows[0] ?? null;
+}
+
+export async function getCodeFixForDiagnosticAndMode(
+  diagnosticId: string,
+  merchantId: string,
+  generationMode: "fast" | "deep",
+) {
+  const rows = await query<CodeFix>(
+    `
+    SELECT cf.*
+    FROM code_fixes cf
+    JOIN diagnostics d ON d.id = cf.diagnostic_id
+    WHERE cf.diagnostic_id = $1
+      AND d.merchant_id = $2
+      AND cf.generation_mode = $3
+    ORDER BY cf.created_at DESC
+    LIMIT 1
+    `,
+    [diagnosticId, merchantId, generationMode],
   );
 
   return rows[0] ?? null;

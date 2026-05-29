@@ -4,6 +4,10 @@ const globalForPg = globalThis as unknown as {
   pgPool?: Pool;
 };
 
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is required. Check .env.local or deployment env vars.");
+}
+
 export const pool =
   globalForPg.pgPool ??
   new Pool({

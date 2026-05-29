@@ -3,15 +3,6 @@ import { redirect } from "next/navigation";
 import { getCurrentMerchant } from "@/lib/current-merchant";
 import { deployCodeFix, getCodeFix } from "@/repositories/code-fixes";
 
-async function deployAction(formData: FormData) {
-  "use server";
-
-  const id = String(formData.get("id"));
-  await deployCodeFix(id);
-
-  redirect(`/fixes/${id}`);
-}
-
 export default async function FixPage({
   params,
 }: {
@@ -22,13 +13,26 @@ export default async function FixPage({
   if (!merchant) {
     redirect("/sign-in");
   }
-
+  
+  const merchantId = merchant.id;
   const { id } = await params;
-  const fix = await getCodeFix(id);
+  const fix = await getCodeFix(id, merchant.id);
 
   if (!fix) {
     redirect("/dashboard");
   }
+
+  async function deployAction() {
+  "use server";
+
+  const deployedFix = await deployCodeFix(id, merchantId);
+
+  if (!deployedFix) {
+    throw new Error("Deploy failed: code fix was not found for this merchant.");
+  }
+
+  redirect(`/fixes/${id}`);
+}
 
   return (
     <main className="min-h-screen bg-slate-950 p-8 text-white">
@@ -75,8 +79,7 @@ export default async function FixPage({
           <p className="mt-4 text-slate-300">{fix.deployment_notes}</p>
 
           <form action={deployAction} className="mt-6">
-            <input type="hidden" name="id" value={fix.id} />
-
+            
             {fix.deployed ? (
               <div className="space-y-3">
                 <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-emerald-200">

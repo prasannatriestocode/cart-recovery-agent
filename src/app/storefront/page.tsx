@@ -1,8 +1,18 @@
 import Link from "next/link";
-import { getLatestDeployedCodeFix } from "@/repositories/code-fixes";
+import { redirect } from "next/navigation";
+import { getCurrentMerchant } from "@/lib/current-merchant";
+import { getLatestDeployedCodeFixForMerchant } from "@/repositories/code-fixes";
+
+export const dynamic = "force-dynamic";
 
 export default async function StorefrontPage() {
-  const deployedFix = await getLatestDeployedCodeFix();
+const merchant = await getCurrentMerchant();
+
+  if (!merchant) {
+    redirect("/sign-in");
+  }
+
+  const deployedFix = await getLatestDeployedCodeFixForMerchant(merchant.id);
 
   const hasFreeShippingBanner =
     deployedFix?.fix_type === "banner" && deployedFix.deployed;
