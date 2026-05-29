@@ -1,7 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: [
+    "@openai/codex-sdk",
+    "@openai/codex",
+    "@openai/codex-darwin-arm64",
+  ],
 };
 
 export default nextConfig;

@@ -14,6 +14,8 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.4.1",
+    "@openai/codex": "^0.134.0",
+    "@openai/codex-darwin-arm64": "npm:@openai/codex@^0.134.0-darwin-arm64",
     "@openai/codex-sdk": "^0.134.0",
     "dotenv": "^17.4.2",
     "next": "16.2.6",

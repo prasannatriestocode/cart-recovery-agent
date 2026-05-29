@@ -24,6 +24,109 @@ function extractJson(text: string) {
   return text.slice(start, end + 1);
 }
 
+function assertGeneratedFix(value: unknown): Omit<
+  GeneratedFixResult,
+  "generationMode" | "modelName"
+> {
+  if (!value || typeof value !== "object") {
+    throw new Error("Codex returned a non-object response.");
+  }
+
+  const parsed = value as Record<string, unknown>;
+
+  const fixType = parsed.fixType;
+  const componentName = parsed.componentName;
+  const componentCode = parsed.componentCode;
+  const testCode = parsed.testCode;
+  const explanation = parsed.explanation;
+  const deploymentNotes = parsed.deploymentNotes;
+
+  if (typeof fixType !== "string" || fixType.trim().length === 0) {
+    throw new Error("Codex response missing required field: fixType");
+  }
+
+  if (typeof componentName !== "string" || componentName.trim().length === 0) {
+    throw new Error("Codex response missing required field: componentName");
+  }
+
+  if (typeof componentCode !== "string" || componentCode.trim().length === 0) {
+    throw new Error("Codex response missing required field: componentCode");
+  }
+
+  if (typeof testCode !== "string" || testCode.trim().length === 0) {
+    throw new Error("Codex response missing required field: testCode");
+  }
+
+  if (typeof explanation !== "string" || explanation.trim().length === 0) {
+    throw new Error("Codex response missing required field: explanation");
+  }
+
+  if (
+    typeof deploymentNotes !== "string" ||
+    deploymentNotes.trim().length === 0
+  ) {
+    throw new Error("Codex response missing required field: deploymentNotes");
+  }
+
+  return {
+    fixType,
+    componentName,
+    componentCode,
+    testCode,
+    explanation,
+    deploymentNotes,
+  };
+}
+
+function extractCodexText(result: unknown): string {
+  if (typeof result === "string") {
+    return result;
+  }
+
+  if (!result || typeof result !== "object") {
+    throw new Error("Codex returned an empty response.");
+  }
+
+  const record = result as Record<string, unknown>;
+
+  if (typeof record.final_response === "string") {
+    return record.final_response;
+  }
+
+  if (typeof record.finalResponse === "string") {
+    return record.finalResponse;
+  }
+
+  if (typeof record.output === "string") {
+    return record.output;
+  }
+
+  if (typeof record.text === "string") {
+    return record.text;
+  }
+
+  if (Array.isArray(record.items)) {
+    const agentMessage = record.items.find((item) => {
+      return (
+        item &&
+        typeof item === "object" &&
+        (item as Record<string, unknown>).type === "agent_message" &&
+        typeof (item as Record<string, unknown>).text === "string"
+      );
+    });
+
+    if (agentMessage) {
+      return String((agentMessage as Record<string, unknown>).text);
+    }
+  }
+
+  throw new Error(
+    `Could not extract text from Codex response. Top-level keys: ${Object.keys(
+      record,
+    ).join(", ")}`,
+  );
+}
+
 export async function generateFixWithCodex(input: {
   rootCauses: unknown;
   dropOffMetrics: unknown;
@@ -43,7 +146,7 @@ export async function generateFixWithCodex(input: {
 
   if (process.env.CODEX_MOCK?.toLowerCase() === "true") {
     console.log("CODEX_MOCK=true, returning mock fix.");
-    //console.log("Prompt preview:", prompt.slice(0, 500));
+    console.log("Prompt preview:", prompt.slice(0, 500));
 
     const mockFix = getMockFix();
 
@@ -57,25 +160,18 @@ export async function generateFixWithCodex(input: {
   const codex = new Codex();
   const thread = codex.startThread();
 
-  const result = await thread.run(prompt);
+const result = await thread.run(prompt);
 
-  const rawText =
-    typeof result === "string"
-      ? result
-      : "final_response" in result
-        ? String(result.final_response)
-        : JSON.stringify(result);
+const rawText = extractCodexText(result);
 
-  const parsed = JSON.parse(extractJson(rawText));
+//console.log("Codex raw response preview:", rawText.slice(0, 2000));
 
-  return {
-    fixType: String(parsed.fixType),
-    generationMode,
-    modelName,
-    componentName: String(parsed.componentName),
-    componentCode: String(parsed.componentCode),
-    testCode: String(parsed.testCode),
-    explanation: String(parsed.explanation),
-    deploymentNotes: String(parsed.deploymentNotes),
-  };
+const parsed = JSON.parse(extractJson(rawText));
+const validated = assertGeneratedFix(parsed);
+
+return {
+  ...validated,
+  generationMode,
+  modelName,
+};
 }
